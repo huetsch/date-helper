@@ -357,19 +357,19 @@ class DateHelper
   date_select: (object_name, method, options = {}, html_options = {}) ->
     delete options.object
     #console.log 'building tag'
-    tag = new InstanceTag(object_name, method, self, options)
+    tag = new InstanceTag(object_name, method, @, options)
     #console.log 'done building tag'
     #console.log tag
     tag.to_date_select_tag(options, html_options)
-    #new InstanceTag(object_name, method, self, options).to_date_select_tag(options, html_options)
+    #new InstanceTag(object_name, method, @, options).to_date_select_tag(options, html_options)
 
   time_select: (object_name, method, options = {}, html_options = {}) ->
     delete options.object
-    new InstanceTag(object_name, method, self, options).to_time_select_tag(options, html_options)
+    new InstanceTag(object_name, method, @, options).to_time_select_tag(options, html_options)
 
   datetime_select: (object_name, method, options = {}, html_options = {}) ->
     delete options.object
-    new InstanceTag(object_name, method, self, options).to_datetime_select_tag(options, html_options)
+    new InstanceTag(object_name, method, @, options).to_datetime_select_tag(options, html_options)
 
   select_datetime: (datetime = new Date(), options = {}, html_options = {}) ->
     new DateTimeSelector(datetime, options, html_options).select_datetime()

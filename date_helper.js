@@ -504,7 +504,7 @@
         html_options = {};
       }
       delete options.object;
-      tag = new InstanceTag(object_name, method, self, options);
+      tag = new InstanceTag(object_name, method, this, options);
       return tag.to_date_select_tag(options, html_options);
     };
     DateHelper.prototype.time_select = function(object_name, method, options, html_options) {
@@ -515,7 +515,7 @@
         html_options = {};
       }
       delete options.object;
-      return new InstanceTag(object_name, method, self, options).to_time_select_tag(options, html_options);
+      return new InstanceTag(object_name, method, this, options).to_time_select_tag(options, html_options);
     };
     DateHelper.prototype.datetime_select = function(object_name, method, options, html_options) {
       if (options == null) {
@@ -525,7 +525,7 @@
         html_options = {};
       }
       delete options.object;
-      return new InstanceTag(object_name, method, self, options).to_datetime_select_tag(options, html_options);
+      return new InstanceTag(object_name, method, this, options).to_datetime_select_tag(options, html_options);
     };
     DateHelper.prototype.select_datetime = function(datetime, options, html_options) {
       if (datetime == null) {
