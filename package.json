@@ -1,0 +1,12 @@
+{
+  "name": "date-helper",
+  "description": "Rails' DateHelper ported to Javascript",
+  "keywords": ["date", "date-helper"],
+  "version": "0.0.1",
+  "dependencies": {
+    "tag-helper": "0.0.2"
+  },
+  "main": "./date_helper.js",
+  "author": "Mark Huetsch <markhuetsch@gmail.com>",
+  "license": "MIT"
+}
