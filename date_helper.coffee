@@ -11,7 +11,6 @@ root = exports ? this
 if window?
   TagHelper = window.TagHelper
 else
-  require 'cream'
   TagHelper = require 'tag-helper'
 
 class ArgumentError extends Error

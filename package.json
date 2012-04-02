@@ -3,10 +3,9 @@
   "description": "Rails' DateHelper ported to Javascript",
   "keywords": ["date", "date-helper"],
   "homepage": "https://github.com/huetsch/date-helper",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "dependencies": {
-    "cream": ">= 0.0.1",
-    "tag-helper": "0.0.2"
+    "tag-helper": "0.0.3"
   },
   "main": "./date_helper.js",
   "author": "Mark Huetsch <markhuetsch@gmail.com>",
