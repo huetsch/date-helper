@@ -1,46 +1,18 @@
 (function() {
-  var ArgumentError, DateHelper, DateTimeSelector, InstanceTag, TagHelper, clone, root,
-    __hasProp = Object.prototype.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; },
+  var DateHelper, DateTimeSelector, InstanceTag, TagHelper,
     __indexOf = Array.prototype.indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
-  root = typeof exports !== "undefined" && exports !== null ? exports : this;
+  TagHelper = require('tag-helper');
 
-  if (typeof window !== "undefined" && window !== null) {
-    TagHelper = window.TagHelper;
-  } else {
-    TagHelper = require('tag-helper');
-  }
-
-  ArgumentError = (function(_super) {
-
-    __extends(ArgumentError, _super);
-
-    function ArgumentError() {
-      ArgumentError.__super__.constructor.apply(this, arguments);
-    }
-
-    return ArgumentError;
-
-  })(Error);
-
-  clone = function(obj) {
-    var key, newInstance;
-    if (!(obj != null) || typeof obj !== 'object') return obj;
-    newInstance = new obj.constructor();
-    for (key in obj) {
-      newInstance[key] = clone(obj[key]);
-    }
-    return newInstance;
-  };
+  InstanceTag = require('instance-tag');
 
   DateTimeSelector = (function() {
 
     function DateTimeSelector(datetime, options, html_options) {
       if (options == null) options = {};
       if (html_options == null) html_options = {};
-      this.options = clone(options);
-      this.html_options = clone(html_options);
+      this.options = Object.clone(options);
+      this.html_options = Object.clone(html_options);
       if (datetime instanceof Date) {
         this.datetime = datetime;
       } else if (datetime) {
@@ -81,7 +53,7 @@
 
     DateTimeSelector.prototype.select_datetime = function() {
       var o, order, _base, _base2, _base3, _base4, _base5, _i, _len, _ref;
-      order = clone(this.date_order());
+      order = Object.clone(this.date_order());
       order = order.filter(function(x) {
         return x !== 'hour' && x !== 'minute' && x !== 'second';
       });
@@ -110,7 +82,7 @@
 
     DateTimeSelector.prototype.select_date = function() {
       var o, order, ret, _base, _base2, _base3, _i, _len, _ref;
-      order = clone(this.date_order());
+      order = Object.clone(this.date_order());
       this.options.discard_hour = true;
       this.options.discard_minute = true;
       this.options.discard_second = true;
@@ -229,7 +201,7 @@
     DateTimeSelector.prototype.build_selects_from_types = function(order) {
       var new_select, select, separator, type, _i, _len, _ref;
       select = '';
-      _ref = clone(order).reverse();
+      _ref = Object.clone(order).reverse();
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         type = _ref[_i];
         if (type === order.first()) {
@@ -474,6 +446,8 @@
 
   })();
 
+  exports.DateTimeSelector = DateTimeSelector;
+
   DateHelper = (function() {
 
     function DateHelper() {}
@@ -562,111 +536,62 @@
 
   })();
 
-  root.DateTimeSelector = DateTimeSelector;
+  InstanceTag.prototype.to_date_select_tag = function(options, html_options) {
+    if (options == null) options = {};
+    if (html_options == null) html_options = {};
+    return this.datetime_selector(options, html_options).select_date().html_safe().valueOf();
+  };
 
-  root.DateHelper = new DateHelper();
+  InstanceTag.prototype.to_time_select_tag = function(options, html_options) {
+    if (options == null) options = {};
+    if (html_options == null) html_options = {};
+    return this.datetime_selector(options, html_options).select_time().html_safe().valueOf();
+  };
 
-  InstanceTag = (function() {
+  InstanceTag.prototype.to_datetime_select_tag = function(options, html_options) {
+    if (options == null) options = {};
+    if (html_options == null) html_options = {};
+    return this.datetime_selector(options, html_options).select_datetime().html_safe().valueOf();
+  };
 
-    function InstanceTag(object_name, method_name, template_object, object) {
-      var regex, str, _ref;
-      if (object == null) object = null;
-      _ref = [clone(String(object_name).valueOf()), clone(String(method_name).valueOf())], this.object_name = _ref[0], this.method_name = _ref[1];
-      this.template_object = template_object;
-      regex = /\[\]$/;
-      if (regex.test(this.object_name)) {
-        this.object_name = this.object_name.replace(regex, '');
+  InstanceTag.prototype.datetime_selector = function(options, html_options) {
+    var datetime, _base, _name;
+    datetime = (typeof (_base = this.object)[_name = this.method_name] === "function" ? _base[_name]() : void 0) || this.default_datetime(options);
+    this.auto_index || (this.auto_index = null);
+    options = Object.clone(options);
+    options.field_name = this.method_name;
+    options.include_position = true;
+    options.prefix || (options.prefix = this.object_name);
+    if (this.auto_index && !(options.index != null)) {
+      options.index = this.auto_index;
+    }
+    return new DateTimeSelector(datetime, options, html_options);
+  };
+
+  InstanceTag.prototype.default_datetime = function(options) {
+    var default_options, key, time, _i, _len, _ref;
+    if (!(options.include_blank || options.prompt)) {
+      if (!options["default"]) {
+        return new Date();
+      } else if (options["default"] instanceof Date) {
+        return options["default"];
       } else {
-        regex = /\[\]\]$/;
-        if (regex.test(this.object_name)) {
-          this.object_name = this.object_name.replace(regex, ']');
-        } else {
-          regex = null;
+        default_options = Object.clone(options["default"]);
+        default_options.min || (default_options.min = default_options.minute);
+        default_options.sec || (default_options.sec = default_options.second);
+        time = new Date();
+        _ref = ['month', 'hours', 'minutes', 'seconds'];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          key = _ref[_i];
+          default_options[key] || (default_options[key] = time["get" + (key.capitalize())]());
         }
-      }
-      this.object = this.retrieve_object(object);
-      if (regex) {
-        str = regex.exec(this.object_name);
-        this.auto_index = this.retrieve_autoindex(this.object_name.slice(0, this.object_name.indexOf(str)));
+        default_options.fullYear || (default_options.fullYear = time["getFullYear"]());
+        default_options.day || (default_options.day = time["getDate"]());
+        return new Date(default_options.fullYear, default_options.month, default_options.day, default_options.hours, default_options.minutes, default_options.seconds);
       }
     }
+  };
 
-    InstanceTag.prototype.to_date_select_tag = function(options, html_options) {
-      if (options == null) options = {};
-      if (html_options == null) html_options = {};
-      return this.datetime_selector(options, html_options).select_date().html_safe().valueOf();
-    };
-
-    InstanceTag.prototype.to_time_select_tag = function(options, html_options) {
-      if (options == null) options = {};
-      if (html_options == null) html_options = {};
-      return this.datetime_selector(options, html_options).select_time().html_safe().valueOf();
-    };
-
-    InstanceTag.prototype.to_datetime_select_tag = function(options, html_options) {
-      if (options == null) options = {};
-      if (html_options == null) html_options = {};
-      return this.datetime_selector(options, html_options).select_datetime().html_safe().valueOf();
-    };
-
-    InstanceTag.prototype.datetime_selector = function(options, html_options) {
-      var datetime, _base, _name;
-      datetime = (typeof (_base = this.object)[_name = this.method_name] === "function" ? _base[_name]() : void 0) || this.default_datetime(options);
-      this.auto_index || (this.auto_index = null);
-      options = clone(options);
-      options.field_name = this.method_name;
-      options.include_position = true;
-      options.prefix || (options.prefix = this.object_name);
-      if (this.auto_index && !(options.index != null)) {
-        options.index = this.auto_index;
-      }
-      return new DateTimeSelector(datetime, options, html_options);
-    };
-
-    InstanceTag.prototype.default_datetime = function(options) {
-      var default_options, key, time, _i, _len, _ref;
-      if (!(options.include_blank || options.prompt)) {
-        if (!options["default"]) {
-          return new Date();
-        } else if (options["default"] instanceof Date) {
-          return options["default"];
-        } else {
-          default_options = clone(options["default"]);
-          default_options.min || (default_options.min = default_options.minute);
-          default_options.sec || (default_options.sec = default_options.second);
-          time = new Date();
-          _ref = ['month', 'hours', 'minutes', 'seconds'];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            key = _ref[_i];
-            default_options[key] || (default_options[key] = time["get" + (key.capitalize())]());
-          }
-          default_options.fullYear || (default_options.fullYear = time["getFullYear"]());
-          default_options.day || (default_options.day = time["getDate"]());
-          return new Date(default_options.fullYear, default_options.month, default_options.day, default_options.hours, default_options.minutes, default_options.seconds);
-        }
-      }
-    };
-
-    InstanceTag.prototype.retrieve_object = function(object) {
-      if (object) {
-        return object;
-      } else if (this.template_object["" + this.object_name] != null) {
-        return this.template_object["" + this.object_name];
-      }
-    };
-
-    InstanceTag.prototype.retrieve_autoindex = function(pre_match) {
-      var object;
-      object = this.object || this.template_object["" + pre_match];
-      if (object) {
-        return JSON.stringify(object);
-      } else {
-        throw new ArgumentError("object[] naming but object param and @object var don't exist or don't respond to to_param: " + object.inspect);
-      }
-    };
-
-    return InstanceTag;
-
-  })();
+  exports.DateHelper = new DateHelper();
 
 }).call(this);

@@ -6,35 +6,17 @@
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-root = exports ? this
-
-if window?
-  TagHelper = window.TagHelper
-else
-  TagHelper = require 'tag-helper'
-
-class ArgumentError extends Error
-
-#clone = (obj) -> JSON.parse(JSON.stringify obj)
-clone = (obj) ->
-  if not obj? or typeof obj isnt 'object'
-    return obj
-
-  newInstance = new obj.constructor()
-
-  for key of obj
-    newInstance[key] = clone obj[key]
-
-  return newInstance
+TagHelper = require 'tag-helper'
+InstanceTag = require 'instance-tag'
 
 class DateTimeSelector
   constructor: (datetime, options = {}, html_options = {}) ->
     #console.log "new datetime selector created"
-    @options = clone options
+    @options = Object.clone options
     #console.log "new datetime selector cloned options:"
     #console.log JSON.stringify(@options)
 
-    @html_options = clone html_options
+    @html_options = Object.clone html_options
     if datetime instanceof Date
       @datetime = datetime
     else if datetime
@@ -56,7 +38,7 @@ class DateTimeSelector
     @options.order or ['year', 'month', 'day'] or []
 
   select_datetime: ->
-    order = clone @date_order()
+    order = Object.clone @date_order()
     ##console.log JSON.stringify(order)
     order = order.filter (x) -> x not in ['hour', 'minute', 'second']
 
@@ -86,7 +68,7 @@ class DateTimeSelector
     #console.log "select_date called"
     #console.log "@datetime"
     #console.log @datetime?.toString()
-    order = clone @date_order()
+    order = Object.clone @date_order()
 
     @options.discard_hour = true
     @options.discard_minute = true
@@ -205,7 +187,7 @@ class DateTimeSelector
     #console.log "@datetime"
     #console.log @datetime?.toString()
     select = ''
-    for type in clone(order).reverse()
+    for type in Object.clone(order).reverse()
       if type is order.first() # don't add on last field
         separator = ''
       else
@@ -343,6 +325,8 @@ class DateTimeSelector
   input_id_from_type: (type) ->
     @input_name_from_type(type).replace(/([\[\(])|(\]\[)/g, '_').replace(/[\]\)]/g, '')
 
+exports.DateTimeSelector = DateTimeSelector
+
 # TODO prompt_tag
 class DateHelper
   date_select: (object_name, method, options = {}, html_options = {}) ->
@@ -389,98 +373,64 @@ class DateHelper
   select_year: (date, options = {}, html_options = {}) ->
     new DateTimeSelector(date, options, html_options).select_year()
 
-root.DateTimeSelector = DateTimeSelector
-root.DateHelper = new DateHelper()
+InstanceTag::to_date_select_tag = (options = {}, html_options = {}) ->
+  @datetime_selector(options, html_options).select_date().html_safe().valueOf()
 
-class InstanceTag
-  constructor: (object_name, method_name, template_object, object = null) ->
-    [@object_name, @method_name] = [clone(String(object_name).valueOf()), clone(String(method_name).valueOf())]
-    @template_object = template_object
-    regex = /\[\]$/
-    if regex.test(@object_name)
-      @object_name = @object_name.replace(regex, '')
+InstanceTag::to_time_select_tag = (options = {}, html_options = {}) ->
+  @datetime_selector(options, html_options).select_time().html_safe().valueOf()
+
+InstanceTag::to_datetime_select_tag = (options = {}, html_options = {}) ->
+  @datetime_selector(options, html_options).select_datetime().html_safe().valueOf()
+
+InstanceTag::datetime_selector = (options, html_options) ->
+  #console.log 'entering datetime_selector'
+  #console.log '@object:'
+  #console.log @object
+  #console.log '@method_name:'
+  #console.log @method_name
+  # TODO this is or'd with value(object) in Rails, but I don't totally understand what that means
+  #console.log "default_datetime(options) #{@default_datetime(options)}"
+  datetime = @object[@method_name]?() or @default_datetime(options)
+  #console.log 'datetime:'
+  #console.log datetime
+  @auto_index ||= null
+
+  options = Object.clone(options)
+  options.field_name = @method_name
+  options.include_position = true
+  options.prefix ||= @object_name
+  options.index = @auto_index if (@auto_index and not options.index?)
+
+  new DateTimeSelector(datetime, options, html_options)
+
+InstanceTag::default_datetime = (options) ->
+  #console.log 'entering default_datetime'
+  #console.log 'options'
+  #console.log options
+  unless options.include_blank or options.prompt
+    if not options.default
+      new Date()
+    else if options.default instanceof Date
+      options.default
     else
-      regex = /\[\]\]$/
-      if regex.test(@object_name)
-        @object_name = @object_name.replace(regex, ']')
-      else
-        regex = null
-    @object = @retrieve_object(object)
-    #console.log "@object_name"
-    #console.log @object_name
-    if regex
-      str = regex.exec(@object_name)
-      @auto_index = @retrieve_autoindex(@object_name[0...@object_name.indexOf(str)])
+      default_options = Object.clone options.default
 
-  to_date_select_tag: (options = {}, html_options = {}) ->
-    @datetime_selector(options, html_options).select_date().html_safe().valueOf()
+      # rename 'minute' and 'second' to 'min' and 'sec'
 
-  to_time_select_tag: (options = {}, html_options = {}) ->
-    @datetime_selector(options, html_options).select_time().html_safe().valueOf()
+      # XXX this is a date object, unlike the ruby, we can't just set the attributes this way
+      default_options.min ||= default_options.minute
+      default_options.sec ||= default_options.second
 
-  to_datetime_select_tag: (options = {}, html_options = {}) ->
-    @datetime_selector(options, html_options).select_datetime().html_safe().valueOf()
+      time = new Date()
 
-  datetime_selector: (options, html_options) ->
-    #console.log 'entering datetime_selector'
-    #console.log '@object:'
-    #console.log @object
-    #console.log '@method_name:'
-    #console.log @method_name
-    # TODO this is or'd with value(object) in Rails, but I don't totally understand what that means
-    #console.log "default_datetime(options) #{@default_datetime(options)}"
-    datetime = @object[@method_name]?() or @default_datetime(options)
-    #console.log 'datetime:'
-    #console.log datetime
-    @auto_index ||= null
+      # date -> day...
+      for key in ['month', 'hours', 'minutes', 'seconds']
+        default_options[key] ||= time["get#{key.capitalize()}"]()
+      default_options.fullYear ||= time["getFullYear"]()
+      default_options.day ||= time["getDate"]()
+      #console.log 'default options'
+      #console.log default_options
 
-    options = clone options
-    options.field_name = @method_name
-    options.include_position = true
-    options.prefix ||= @object_name
-    options.index = @auto_index if (@auto_index and not options.index?)
+      new Date(default_options.fullYear, default_options.month, default_options.day, default_options.hours, default_options.minutes, default_options.seconds)
 
-    new DateTimeSelector(datetime, options, html_options)
-
-   default_datetime: (options) ->
-     #console.log 'entering default_datetime'
-     #console.log 'options'
-     #console.log options
-     unless options.include_blank or options.prompt
-       if not options.default
-         new Date()
-       else if options.default instanceof Date
-         options.default
-       else
-         default_options = clone options.default
-
-         # rename 'minute' and 'second' to 'min' and 'sec'
-
-         # XXX this is a date object, unlike the ruby, we can't just set the attributes this way
-         default_options.min ||= default_options.minute
-         default_options.sec ||= default_options.second
-
-         time = new Date()
-
-         # date -> day...
-         for key in ['month', 'hours', 'minutes', 'seconds']
-           default_options[key] ||= time["get#{key.capitalize()}"]()
-         default_options.fullYear ||= time["getFullYear"]()
-         default_options.day ||= time["getDate"]()
-         #console.log 'default options'
-         #console.log default_options
-
-         new Date(default_options.fullYear, default_options.month, default_options.day, default_options.hours, default_options.minutes, default_options.seconds)
-
-  retrieve_object: (object) ->
-    if object
-      object
-    else if @template_object["#{@object_name}"]?
-      @template_object["#{@object_name}"]
-
-  retrieve_autoindex: (pre_match) ->
-    object = @object || @template_object["#{pre_match}"]
-    if object
-      JSON.stringify object
-    else
-      throw new ArgumentError("object[] naming but object param and @object var don't exist or don't respond to to_param: #{object.inspect}")
+exports.DateHelper = new DateHelper()
