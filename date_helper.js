@@ -9,7 +9,6 @@
   if (typeof window !== "undefined" && window !== null) {
     TagHelper = window.TagHelper;
   } else {
-    require('cream');
     TagHelper = require('tag-helper');
   }
 
