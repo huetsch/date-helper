@@ -1,62 +1,45 @@
 (function() {
-  var ArgumentError, DateHelper, DateTimeSelector, InstanceTag, TagHelper, clone, root;
-  var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
-    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
-    function ctor() { this.constructor = child; }
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor;
-    child.__super__ = parent.prototype;
-    return child;
-  }, __indexOf = Array.prototype.indexOf || function(item) {
-    for (var i = 0, l = this.length; i < l; i++) {
-      if (this[i] === item) return i;
-    }
-    return -1;
-  };
+  var ArgumentError, DateHelper, DateTimeSelector, InstanceTag, TagHelper, clone, root,
+    __hasProp = Object.prototype.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; },
+    __indexOf = Array.prototype.indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
   root = typeof exports !== "undefined" && exports !== null ? exports : this;
+
   if (typeof window !== "undefined" && window !== null) {
     TagHelper = window.TagHelper;
   } else {
+    require('cream');
     TagHelper = require('tag-helper');
   }
-  String.prototype.capitalize = function() {
-    return (this.split(' ').map(function(word) {
-      return word[0].toUpperCase() + word.slice(1).toLowerCase();
-    })).join(' ');
-  };
-  Array.prototype.first = function() {
-    if (this.length > 0) {
-      return this[0];
-    } else {
-      return;
-    }
-  };
-  ArgumentError = (function() {
-    __extends(ArgumentError, Error);
+
+  ArgumentError = (function(_super) {
+
+    __extends(ArgumentError, _super);
+
     function ArgumentError() {
       ArgumentError.__super__.constructor.apply(this, arguments);
     }
+
     return ArgumentError;
-  })();
+
+  })(Error);
+
   clone = function(obj) {
     var key, newInstance;
-    if (!(obj != null) || typeof obj !== 'object') {
-      return obj;
-    }
+    if (!(obj != null) || typeof obj !== 'object') return obj;
     newInstance = new obj.constructor();
     for (key in obj) {
       newInstance[key] = clone(obj[key]);
     }
     return newInstance;
   };
+
   DateTimeSelector = (function() {
+
     function DateTimeSelector(datetime, options, html_options) {
-      if (options == null) {
-        options = {};
-      }
-      if (html_options == null) {
-        html_options = {};
-      }
+      if (options == null) options = {};
+      if (html_options == null) html_options = {};
       this.options = clone(options);
       this.html_options = clone(html_options);
       if (datetime instanceof Date) {
@@ -67,9 +50,7 @@
       if (this.options.datetime_separator == null) {
         this.options.datetime_separator = ' &mdash; ';
       }
-      if (this.options.time_separator == null) {
-        this.options.time_separator = ' : ';
-      }
+      if (this.options.time_separator == null) this.options.time_separator = ' : ';
       this.sec = function() {
         var _ref;
         return (_ref = this.datetime) != null ? _ref.getSeconds() : void 0;
@@ -87,18 +68,18 @@
         return (_ref = this.datetime) != null ? _ref.getDate() : void 0;
       };
       this.month = function() {
-        if (this.datetime) {
-          return (this.datetime.getMonth() % 12) + 1;
-        }
+        if (this.datetime) return (this.datetime.getMonth() % 12) + 1;
       };
       this.year = function() {
         var _ref;
         return (_ref = this.datetime) != null ? _ref.getFullYear() : void 0;
       };
     }
+
     DateTimeSelector.prototype.date_order = function() {
       return this.options.order || ['year', 'month', 'day'] || [];
     };
+
     DateTimeSelector.prototype.select_datetime = function() {
       var o, order, _base, _base2, _base3, _base4, _base5, _i, _len, _ref;
       order = clone(this.date_order());
@@ -119,9 +100,7 @@
         _ref = ['day', 'month', 'year'];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           o = _ref[_i];
-          if (__indexOf.call(order, o) < 0) {
-            order.unshift(o);
-          }
+          if (__indexOf.call(order, o) < 0) order.unshift(o);
         }
         if (!this.options.discard_hour) {
           order = order.concat(['hour', 'minute', 'second']);
@@ -129,6 +108,7 @@
         return (this.build_selects_from_types(order)).valueOf();
       }
     };
+
     DateTimeSelector.prototype.select_date = function() {
       var o, order, ret, _base, _base2, _base3, _i, _len, _ref;
       order = clone(this.date_order());
@@ -144,13 +124,12 @@
       _ref = ['day', 'month', 'year'];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         o = _ref[_i];
-        if (__indexOf.call(order, o) < 0) {
-          order.unshift(o);
-        }
+        if (__indexOf.call(order, o) < 0) order.unshift(o);
       }
       ret = (this.build_selects_from_types(order)).valueOf();
       return ret;
     };
+
     DateTimeSelector.prototype.select_time = function() {
       var order, _base;
       order = [];
@@ -162,11 +141,10 @@
         order = order.concat(['year', 'month', 'day']);
       }
       order = order.concat(['hour', 'minute']);
-      if (this.options.include_seconds) {
-        order.push('second');
-      }
+      if (this.options.include_seconds) order.push('second');
       return this.build_selects_from_types(order);
     };
+
     DateTimeSelector.prototype.select_second = function() {
       if (this.options.use_hidden || this.options.discard_second) {
         if (this.options.include_seconds) {
@@ -178,6 +156,7 @@
         return this.build_options_and_select('second', this.sec());
       }
     };
+
     DateTimeSelector.prototype.select_minute = function() {
       if (this.options.use_hidden || this.options.discard_minute) {
         return this.build_hidden('minute', this.min());
@@ -187,6 +166,7 @@
         });
       }
     };
+
     DateTimeSelector.prototype.select_hour = function() {
       if (this.options.use_hidden || this.options.discard_hour) {
         return this.build_hidden('hour', this.hour());
@@ -197,6 +177,7 @@
         });
       }
     };
+
     DateTimeSelector.prototype.select_day = function() {
       if (this.options.use_hidden || this.options.discard_day) {
         return this.build_hidden('day', this.day());
@@ -208,6 +189,7 @@
         });
       }
     };
+
     DateTimeSelector.prototype.select_month = function() {
       var month_number, month_options, options;
       if (this.options.use_hidden || this.options.discard_month) {
@@ -218,14 +200,13 @@
           options = {
             value: month_number
           };
-          if (this.month() === month_number) {
-            options.selected = "selected";
-          }
+          if (this.month() === month_number) options.selected = "selected";
           month_options.push(TagHelper.content_tag('option', this.month_name(month_number), options) + "\n");
         }
         return this.build_select('month', month_options.join(''));
       }
     };
+
     DateTimeSelector.prototype.select_year = function() {
       var middle_year, options, val;
       if ((!this.datetime) || this.datetime === 0) {
@@ -245,6 +226,7 @@
         return this.build_options_and_select('year', val, options);
       }
     };
+
     DateTimeSelector.prototype.build_selects_from_types = function(order) {
       var new_select, select, separator, type, _i, _len, _ref;
       select = '';
@@ -261,6 +243,7 @@
       }
       return select.html_safe();
     };
+
     DateTimeSelector.prototype.separator = function(type) {
       var ret;
       ret = (function() {
@@ -310,14 +293,14 @@
       }).call(this);
       return ret || (ret = '');
     };
+
     DateTimeSelector.prototype.month_names = function() {
       var month_names;
       month_names = this.options.use_month_names || this.translated_month_names();
-      if (month_names.length < 13) {
-        month_names.unshift(null);
-      }
+      if (month_names.length < 13) month_names.unshift(null);
       return month_names;
     };
+
     DateTimeSelector.prototype.month_name = function(number) {
       if (this.options.use_month_numbers) {
         return number;
@@ -327,6 +310,7 @@
         return this.month_names()[number];
       }
     };
+
     DateTimeSelector.prototype.translated_month_names = function() {
       if (this.options.use_short_month) {
         return [null, "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -334,12 +318,12 @@
         return ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
       }
     };
+
     DateTimeSelector.prototype.build_options_and_select = function(type, selected, options) {
-      if (options == null) {
-        options = {};
-      }
+      if (options == null) options = {};
       return this.build_select(type, this.build_options(selected, options));
     };
+
     DateTimeSelector.prototype.AMPM_TRANSLATION = {
       0: "12 AM",
       1: "01 AM",
@@ -366,7 +350,9 @@
       22: "10 PM",
       23: "11 PM"
     };
+
     DateTimeSelector.prototype.DEFAULT_PREFIX = 'date';
+
     DateTimeSelector.prototype.POSITION = {
       year: 1,
       month: 2,
@@ -375,11 +361,10 @@
       minute: 5,
       second: 6
     };
+
     DateTimeSelector.prototype.build_options = function(selected, options) {
       var i, leading_zeros, select_options, start, step, stop, tag_options, text, value;
-      if (options == null) {
-        options = {};
-      }
+      if (options == null) options = {};
       start = 0;
       if (options.start) {
         start = options.start;
@@ -395,14 +380,10 @@
         step = options.step;
         delete options.step;
       }
-      if (options.leading_zeros == null) {
-        options.leading_zeros = true;
-      }
+      if (options.leading_zeros == null) options.leading_zeros = true;
       leading_zeros = options.leading_zeros;
       delete options.leading_zeros;
-      if (options.ampm == null) {
-        options.ampm = false;
-      }
+      if (options.ampm == null) options.ampm = false;
       select_options = [];
       for (i = start; start <= stop ? i <= stop : i >= stop; i += step) {
         value = String(i);
@@ -416,14 +397,13 @@
         tag_options = {
           value: value
         };
-        if (selected === i) {
-          tag_options.selected = "selected";
-        }
+        if (selected === i) tag_options.selected = "selected";
         text = options.ampm ? this.AMPM_TRANSLATION[i] : value;
         select_options.push(TagHelper.content_tag('option', text, tag_options));
       }
       return (select_options.join("\n") + "\n").html_safe();
     };
+
     DateTimeSelector.prototype.build_select = function(type, select_options_as_html) {
       var k, select_html, select_options, v, _ref;
       select_options = {
@@ -435,9 +415,7 @@
         v = _ref[k];
         select_options[k] = v;
       }
-      if (this.options.disabled) {
-        select_options.disabled = 'disabled';
-      }
+      if (this.options.disabled) select_options.disabled = 'disabled';
       select_html = "\n";
       if (this.options.include_blank) {
         select_html += TagHelper.content_tag('option', '', {
@@ -450,6 +428,7 @@
       select_html += select_options_as_html;
       return (TagHelper.content_tag('select', select_html.html_safe(), select_options) + "\n").html_safe();
     };
+
     DateTimeSelector.prototype.build_hidden = function(type, value) {
       var html_options;
       html_options = {
@@ -458,11 +437,10 @@
         name: this.input_name_from_type(type),
         value: value
       };
-      if (this.html_options.disabled) {
-        html_options = this.html_options.disabled;
-      }
+      if (this.html_options.disabled) html_options = this.html_options.disabled;
       return (TagHelper.tag('input', html_options) + "\n").html_safe();
     };
+
     DateTimeSelector.prototype.input_name_from_type = function(type) {
       var field_name, k, prefix, v;
       prefix = this.options.prefix || this.DEFAULT_PREFIX;
@@ -488,145 +466,112 @@
         return "" + prefix + "[" + field_name + "]";
       }
     };
+
     DateTimeSelector.prototype.input_id_from_type = function(type) {
       return this.input_name_from_type(type).replace(/([\[\(])|(\]\[)/g, '_').replace(/[\]\)]/g, '');
     };
+
     return DateTimeSelector;
+
   })();
+
   DateHelper = (function() {
+
     function DateHelper() {}
+
     DateHelper.prototype.date_select = function(object_name, method, options, html_options) {
       var tag;
-      if (options == null) {
-        options = {};
-      }
-      if (html_options == null) {
-        html_options = {};
-      }
+      if (options == null) options = {};
+      if (html_options == null) html_options = {};
       delete options.object;
       tag = new InstanceTag(object_name, method, this, options);
       return tag.to_date_select_tag(options, html_options);
     };
+
     DateHelper.prototype.time_select = function(object_name, method, options, html_options) {
-      if (options == null) {
-        options = {};
-      }
-      if (html_options == null) {
-        html_options = {};
-      }
+      if (options == null) options = {};
+      if (html_options == null) html_options = {};
       delete options.object;
       return new InstanceTag(object_name, method, this, options).to_time_select_tag(options, html_options);
     };
+
     DateHelper.prototype.datetime_select = function(object_name, method, options, html_options) {
-      if (options == null) {
-        options = {};
-      }
-      if (html_options == null) {
-        html_options = {};
-      }
+      if (options == null) options = {};
+      if (html_options == null) html_options = {};
       delete options.object;
       return new InstanceTag(object_name, method, this, options).to_datetime_select_tag(options, html_options);
     };
+
     DateHelper.prototype.select_datetime = function(datetime, options, html_options) {
-      if (datetime == null) {
-        datetime = new Date();
-      }
-      if (options == null) {
-        options = {};
-      }
-      if (html_options == null) {
-        html_options = {};
-      }
+      if (datetime == null) datetime = new Date();
+      if (options == null) options = {};
+      if (html_options == null) html_options = {};
       return new DateTimeSelector(datetime, options, html_options).select_datetime();
     };
+
     DateHelper.prototype.select_date = function(date, options, html_options) {
-      if (date == null) {
-        date = new Date();
-      }
-      if (options == null) {
-        options = {};
-      }
-      if (html_options == null) {
-        html_options = {};
-      }
+      if (date == null) date = new Date();
+      if (options == null) options = {};
+      if (html_options == null) html_options = {};
       return new DateTimeSelector(date, options, html_options).select_date();
     };
+
     DateHelper.prototype.select_time = function(datetime, options, html_options) {
-      if (datetime == null) {
-        datetime = Time.current;
-      }
-      if (options == null) {
-        options = {};
-      }
-      if (html_options == null) {
-        html_options = {};
-      }
+      if (datetime == null) datetime = Time.current;
+      if (options == null) options = {};
+      if (html_options == null) html_options = {};
       return new DateTimeSelector(datetime, options, html_options).select_time();
     };
+
     DateHelper.prototype.select_second = function(datetime, options, html_options) {
-      if (options == null) {
-        options = {};
-      }
-      if (html_options == null) {
-        html_options = {};
-      }
+      if (options == null) options = {};
+      if (html_options == null) html_options = {};
       return new DateTimeSelector(datetime, options, html_options).select_second();
     };
+
     DateHelper.prototype.select_minute = function(datetime, options, html_options) {
-      if (options == null) {
-        options = {};
-      }
-      if (html_options == null) {
-        html_options = {};
-      }
+      if (options == null) options = {};
+      if (html_options == null) html_options = {};
       return new DateTimeSelector(datetime, options, html_options).select_minute();
     };
+
     DateHelper.prototype.select_hour = function(datetime, options, html_options) {
-      if (options == null) {
-        options = {};
-      }
-      if (html_options == null) {
-        html_options = {};
-      }
+      if (options == null) options = {};
+      if (html_options == null) html_options = {};
       return new DateTimeSelector(datetime, options, html_options).select_hour();
     };
+
     DateHelper.prototype.select_day = function(date, options, html_options) {
-      if (options == null) {
-        options = {};
-      }
-      if (html_options == null) {
-        html_options = {};
-      }
+      if (options == null) options = {};
+      if (html_options == null) html_options = {};
       return new DateTimeSelector(date, options, html_options).select_day();
     };
+
     DateHelper.prototype.select_month = function(date, options, html_options) {
-      if (options == null) {
-        options = {};
-      }
-      if (html_options == null) {
-        html_options = {};
-      }
+      if (options == null) options = {};
+      if (html_options == null) html_options = {};
       return new DateTimeSelector(date, options, html_options).select_month();
     };
+
     DateHelper.prototype.select_year = function(date, options, html_options) {
-      if (options == null) {
-        options = {};
-      }
-      if (html_options == null) {
-        html_options = {};
-      }
+      if (options == null) options = {};
+      if (html_options == null) html_options = {};
       return new DateTimeSelector(date, options, html_options).select_year();
     };
+
     return DateHelper;
+
   })();
+
   root.DateTimeSelector = DateTimeSelector;
+
   root.DateHelper = new DateHelper();
+
   InstanceTag = (function() {
+
     function InstanceTag(object_name, method_name, template_object, object) {
       var regex, str, _ref;
-      if (object == null) {
-        object = null;
-      }
+      if (object == null) object = null;
       _ref = [clone(String(object_name).valueOf()), clone(String(method_name).valueOf())], this.object_name = _ref[0], this.method_name = _ref[1];
       this.template_object = template_object;
       regex = /\[\]$/;
@@ -646,33 +591,25 @@
         this.auto_index = this.retrieve_autoindex(this.object_name.slice(0, this.object_name.indexOf(str)));
       }
     }
+
     InstanceTag.prototype.to_date_select_tag = function(options, html_options) {
-      if (options == null) {
-        options = {};
-      }
-      if (html_options == null) {
-        html_options = {};
-      }
+      if (options == null) options = {};
+      if (html_options == null) html_options = {};
       return this.datetime_selector(options, html_options).select_date().html_safe().valueOf();
     };
+
     InstanceTag.prototype.to_time_select_tag = function(options, html_options) {
-      if (options == null) {
-        options = {};
-      }
-      if (html_options == null) {
-        html_options = {};
-      }
+      if (options == null) options = {};
+      if (html_options == null) html_options = {};
       return this.datetime_selector(options, html_options).select_time().html_safe().valueOf();
     };
+
     InstanceTag.prototype.to_datetime_select_tag = function(options, html_options) {
-      if (options == null) {
-        options = {};
-      }
-      if (html_options == null) {
-        html_options = {};
-      }
+      if (options == null) options = {};
+      if (html_options == null) html_options = {};
       return this.datetime_selector(options, html_options).select_datetime().html_safe().valueOf();
     };
+
     InstanceTag.prototype.datetime_selector = function(options, html_options) {
       var datetime, _base, _name;
       datetime = (typeof (_base = this.object)[_name = this.method_name] === "function" ? _base[_name]() : void 0) || this.default_datetime(options);
@@ -686,6 +623,7 @@
       }
       return new DateTimeSelector(datetime, options, html_options);
     };
+
     InstanceTag.prototype.default_datetime = function(options) {
       var default_options, key, time, _i, _len, _ref;
       if (!(options.include_blank || options.prompt)) {
@@ -709,6 +647,7 @@
         }
       }
     };
+
     InstanceTag.prototype.retrieve_object = function(object) {
       if (object) {
         return object;
@@ -716,6 +655,7 @@
         return this.template_object["" + this.object_name];
       }
     };
+
     InstanceTag.prototype.retrieve_autoindex = function(pre_match) {
       var object;
       object = this.object || this.template_object["" + pre_match];
@@ -725,6 +665,9 @@
         throw new ArgumentError("object[] naming but object param and @object var don't exist or don't respond to to_param: " + object.inspect);
       }
     };
+
     return InstanceTag;
+
   })();
+
 }).call(this);

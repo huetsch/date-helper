@@ -11,16 +11,8 @@ root = exports ? this
 if window?
   TagHelper = window.TagHelper
 else
+  require 'cream'
   TagHelper = require 'tag-helper'
-
-String::capitalize = ->
-  (this.split(' ').map (word) -> word[0].toUpperCase() + word[1..-1].toLowerCase()).join(' ')
-
-Array::first = ->
-  if this.length > 0
-    this[0]
-  else
-    undefined
 
 class ArgumentError extends Error
 
