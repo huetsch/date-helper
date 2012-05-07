@@ -6,7 +6,7 @@
         "date-helper"
     ],
     "homepage": "https://github.com/huetsch/date-helper",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "dependencies": {
         "tag-helper": ">= 0.0.10",
         "instance-tag": ">= 0.0.1"
