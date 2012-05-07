@@ -11,7 +11,7 @@ TagHelper = require 'tag-helper'
 
 class DateTimeSelector
   constructor: (datetime, options = {}, html_options = {}) ->
-    #console.log "new datetime selector created"
+    #console.log "new datetime selector created, with datetime passed as #{datetime}"
     @options = Object.clone options
     #console.log "new datetime selector cloned options:"
     #console.log JSON.stringify(@options)
@@ -26,6 +26,8 @@ class DateTimeSelector
     unless @options.time_separator?
       @options.time_separator = ' : '
 
+    #console.log @datetime
+
     @sec = -> @datetime?.getSeconds()
     @min = -> @datetime?.getMinutes()
     @hour = -> @datetime?.getHours()
@@ -38,6 +40,7 @@ class DateTimeSelector
     @options.order or ['year', 'month', 'day'] or []
 
   select_datetime: ->
+    #console.log 'select_datetime called'
     order = Object.clone @date_order()
     ##console.log JSON.stringify(order)
     order = order.filter (x) -> x not in ['hour', 'minute', 'second']
@@ -134,9 +137,12 @@ class DateTimeSelector
       @build_options_and_select('minute', @min(), step: @options.minute_step)
 
   select_hour: ->
+    #console.log 'select_hour called'
     if @options.use_hidden or @options.discard_hour
+      #console.log 'select_hour hidden or discarded'
       @build_hidden('hour', @hour())
     else
+      #console.log "select_hour not hidden or discarded: #{@hour()}"
       @build_options_and_select('hour', @hour(), end: 23, ampm: @options.ampm)
 
   select_day: ->

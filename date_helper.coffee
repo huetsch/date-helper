@@ -29,10 +29,16 @@ class DateHelper
     delete options.object
     (new InstanceTag(object_name, method, @, options)).to_datetime_select_tag(options, html_options)
 
-  select_datetime: (datetime = new Date(), options = {}, html_options = {}) ->
+  select_datetime: (datetime, options = {}, html_options = {}) ->
+    # if the user doesn't pass any arguments, we want to use now as the datetime, but if he intentionally
+    # passes null or undefined as datetime, we should not override him
+    if (arguments.length is 0) and ((datetime is null) or (datetime is undefined))
+      datetime = new Date()
     (new DateTimeSelector(datetime, options, html_options)).select_datetime()
 
-  select_date: (date = new Date(), options = {}, html_options = {}) ->
+  select_date: (date, options = {}, html_options = {}) ->
+    if (arguments.length is 0) and ((date is null) or (date is undefined))
+      date = new Date()
     (new DateTimeSelector(date, options, html_options)).select_date()
 
   select_time: (datetime = Time.current, options = {}, html_options = {}) ->

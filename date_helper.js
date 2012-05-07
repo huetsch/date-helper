@@ -35,16 +35,20 @@
     };
 
     DateHelper.prototype.select_datetime = function(datetime, options, html_options) {
-      if (datetime == null) datetime = new Date();
       if (options == null) options = {};
       if (html_options == null) html_options = {};
+      if ((arguments.length === 0) && ((datetime === null) || (datetime === void 0))) {
+        datetime = new Date();
+      }
       return (new DateTimeSelector(datetime, options, html_options)).select_datetime();
     };
 
     DateHelper.prototype.select_date = function(date, options, html_options) {
-      if (date == null) date = new Date();
       if (options == null) options = {};
       if (html_options == null) html_options = {};
+      if ((arguments.length === 0) && ((date === null) || (date === void 0))) {
+        date = new Date();
+      }
       return (new DateTimeSelector(date, options, html_options)).select_date();
     };
 
